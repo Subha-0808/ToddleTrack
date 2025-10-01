@@ -5,21 +5,18 @@ from streamlit_folium import st_folium
 import folium
 from math import radians, sin, cos, sqrt, atan2
 from streamlit_autorefresh import st_autorefresh
+import json
 
 # ------------------- Firebase Setup -------------------
 if not firebase_admin._apps:
-    try:
-        # Use Firebase credentials from Streamlit secrets
-        cred_dict = dict(st.secrets["FIREBASE"])
-        cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
-        cred = credentials.Certificate(cred_dict)
-        
-        firebase_admin.initialize_app(cred, {
-            'databaseURL': 'https://toddletrack-fd848-default-rtdb.asia-southeast1.firebasedatabase.app/'
-        })
-        st.success("✅ Firebase Initialized")
-    except Exception as e:
-        st.error(f"Firebase initialization failed: {e}")
+    # Load Firebase credentials from Streamlit secrets
+    firebase_creds_dict = json.loads(st.secrets["FIREBASE_CREDENTIALS"])
+
+    cred = credentials.Certificate(firebase_creds_dict)
+
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://toddletrack-fd848-default-rtdb.asia-southeast1.firebasedatabase.app/'
+    })
 
 # ------------------- Page Config -------------------
 st.set_page_config(page_title="Toddle Track - Parent Dashboard", layout="wide")
@@ -104,7 +101,7 @@ if lat is not None and lon is not None:
     # Geofence check
     distance = haversine(lat, lon, st.session_state.safe_lat, st.session_state.safe_lon)
     if distance > safe_radius:
-        st.error(f"⚠️ ALERT: Child is outside the safe zone! (Distance: {int(distance)} m)")
+        st.error(f"⚠ ALERT: Child is outside the safe zone! (Distance: {int(distance)} m)")
     else:
         st.info(f"✅ Child is inside the safe zone (Distance: {int(distance)} m)")
 
