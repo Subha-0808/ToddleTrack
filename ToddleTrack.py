@@ -9,12 +9,11 @@ from streamlit_autorefresh import st_autorefresh
 # ------------------- Firebase Setup -------------------
 if not firebase_admin._apps:
     try:
-        # Load Firebase credentials from Streamlit secrets
+        # Use Firebase credentials from Streamlit secrets
         cred_dict = dict(st.secrets["FIREBASE"])
-        # Fix newlines in private key
         cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
         cred = credentials.Certificate(cred_dict)
-
+        
         firebase_admin.initialize_app(cred, {
             'databaseURL': 'https://toddletrack-fd848-default-rtdb.asia-southeast1.firebasedatabase.app/'
         })
