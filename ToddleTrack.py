@@ -5,15 +5,10 @@ from streamlit_folium import st_folium
 import folium
 from math import radians, sin, cos, sqrt, atan2
 from streamlit_autorefresh import st_autorefresh
-import json
 
 # ------------------- Firebase Setup -------------------
 if not firebase_admin._apps:
-    # Load Firebase credentials from Streamlit secrets
-    firebase_creds_dict = json.loads(st.secrets["FIREBASE_CREDENTIALS"])
-
-    cred = credentials.Certificate(firebase_creds_dict)
-
+    cred = credentials.Certificate(st.secrets["FIREBASE"])
     firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://toddletrack-fd848-default-rtdb.asia-southeast1.firebasedatabase.app/'
     })
@@ -55,7 +50,7 @@ def haversine(lat1, lon1, lat2, lon2):
     R = 6371000  # meters
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
-    a = sin(dlat/2) **2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2) **2
+    a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
     c = 2 * atan2(sqrt(a), sqrt(1-a))
     return R * c
 
@@ -67,6 +62,11 @@ if lat is not None and lon is not None:
     # Initialize safe zone if not already
     if "safe_lat" not in st.session_state:
         st.session_state.safe_lat, st.session_state.safe_lon = lat, lon
+    if "trail" not in st.session_state:
+        st.session_state.trail = []
+
+    # Append current location to trail
+    st.session_state.trail.append([lat, lon])
 
     # Map setup
     m = folium.Map(location=[lat, lon], zoom_start=17)
@@ -79,6 +79,9 @@ if lat is not None and lon is not None:
         fill=True,
         fill_color="red",
     ).add_to(m)
+
+    # Movement trail
+    folium.PolyLine(st.session_state.trail, color="green").add_to(m)
 
     # Safe zone circle
     folium.Circle(
