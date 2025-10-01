@@ -8,10 +8,18 @@ from streamlit_autorefresh import st_autorefresh
 
 # ------------------- Firebase Setup -------------------
 if not firebase_admin._apps:
-    cred = credentials.Certificate("C:\\Users\\Subhalakshmi B\\firebase_config.json")
-    firebase_admin.initialize_app(cred, {
-        'databaseURL': 'https://toddletrack-fd848-default-rtdb.asia-southeast1.firebasedatabase.app/'
-    })
+    try:
+        # Load Firebase credentials from Streamlit Secrets
+        cred_dict = dict(st.secrets["FIREBASE"])
+        cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+        cred = credentials.Certificate(cred_dict)
+
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': 'https://toddletrack-fd848-default-rtdb.asia-southeast1.firebasedatabase.app/'
+        })
+        st.success("✅ Firebase Initialized")
+    except Exception as e:
+        st.error(f"Firebase initialization failed: {e}")
 
 # ------------------- Page Config -------------------
 st.set_page_config(page_title="Toddle Track - Parent Dashboard", layout="wide")
