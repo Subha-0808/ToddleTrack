@@ -2,3 +2,6 @@ streamlit
 firebase-admin
 streamlit-folium
 folium
+streamlit-autorefresh
+pandas
+requests
